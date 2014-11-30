@@ -22,7 +22,7 @@ public class DatabaseHelperClassBuilder
     private final List<DbTableDescr> dbTableDescrs;
 
     private static final String TEMPLATE_PATH = "/net/dbpersian/processor/templates/dbhelper.st";
-    private static final String DBHELPER_CLASS_NAME_FMT = "Generic%s";
+    private static final String DBHELPER_CLASS_NAME_FMT = "Abstract%s";
 
     private final String template;
 

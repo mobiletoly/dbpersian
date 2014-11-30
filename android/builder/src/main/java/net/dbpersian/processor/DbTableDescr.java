@@ -74,6 +74,14 @@ class DbTableDescr
         return false;
     }
 
+    public String getOnEntityLoad()
+    {
+        if (mDbTable.onEntityLoad() == null || mDbTable.onEntityLoad().isEmpty()) {
+            return null;
+        }
+        return mDbTable.onEntityLoad();
+    }
+
     /**
      * Prepare SQL statement to create a table.
      */

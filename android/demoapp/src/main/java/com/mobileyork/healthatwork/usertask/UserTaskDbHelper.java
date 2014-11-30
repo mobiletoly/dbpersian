@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteDatabase;
 import net.dbpersian.annotations.db.Database;
 
 @Database(filename = "UserTask.db", version = 2)
-public class UserTaskDbHelper extends GenericUserTaskDbHelper
+public class UserTaskDbHelper extends AbstractUserTaskDbHelper
 {
     public UserTaskDbHelper(Context context)
     {

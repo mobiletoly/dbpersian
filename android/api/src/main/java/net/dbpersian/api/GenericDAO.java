@@ -93,7 +93,7 @@ public abstract class GenericDAO<T>
         return mDatabase;
     }
 
-    /** Close table. */
+    /** Close DAO object. */
     public void close()
     {
         if (mOwnerOfDatabase) {

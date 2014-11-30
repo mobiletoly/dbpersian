@@ -15,4 +15,5 @@ public @interface DbTable
 {
     String sqlName();
     int version() default 1;
+    String onEntityLoad() default "";
 }

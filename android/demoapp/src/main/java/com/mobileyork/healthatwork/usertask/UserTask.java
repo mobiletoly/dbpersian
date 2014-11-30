@@ -4,7 +4,7 @@ import net.dbpersian.annotations.db.DbColumn;
 import net.dbpersian.annotations.db.DbForeignKeyReader;
 import net.dbpersian.annotations.db.DbTable;
 
-@DbTable(sqlName = "user_task")
+@DbTable(sqlName = "user_task", onEntityLoad = "onLoad")
 public final class UserTask
 {
     @DbColumn(name = "id", primaryKey = true)
@@ -95,5 +95,10 @@ public final class UserTask
 
     public void setUserFullName(UserFullName userFullName) {
         this.userFullName = userFullName;
+    }
+
+    void onLoad()
+    {
+        System.out.println("::::::::::::: ONLOAD :::::::::::::::::");
     }
 }

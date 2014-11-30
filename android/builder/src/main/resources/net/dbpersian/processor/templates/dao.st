@@ -146,7 +146,28 @@ public <entityClassName> findBy<columnDescr.capitalizedJavaFieldName>(<columnDes
     <endif>
     final String[] selections = new String[]{ valueToQuery \};
     return queryForSingleResult(sql, selections);
-\}<endif>}>
+\}
+
+/**
+ * Delete a single instance of <entityClassName> object from the table.
+ * This request is based on "<columnDescr.sqlName>" column (<entityClassName>.<columnDescr.javaFieldType> class member)
+ * matching the value provided as a parameter.
+ * @param value     Value this request is looking for.
+ */
+public int deleteBy<columnDescr.capitalizedJavaFieldName>(<columnDescr.javaFieldType> value)
+{
+    <if(columnDescr.basicJavaType)>
+    final String valueToQuery = String.valueOf(value);
+    <elseif(columnDescr.stringJavaType)>
+    final String valueToQuery = value;
+    <else>
+    final String valueToQuery = value.toString();
+    <endif>
+    final String[] whereArgs = new String[]{ valueToQuery \};
+    return delete("<columnDescr.sqlName>=?", whereArgs);
+\}
+
+<endif>}>
 
     <columnDescrList:{columnDescr | <if(columnDescr.unique)>
 /**
@@ -183,6 +204,9 @@ if (<columnDescr.javaFieldName>Idx != null) {
     <endif>
 \}
         }>
+    <if(tableDescr.onEntityLoad)>
+        entity.<tableDescr.onEntityLoad>();
+    <endif>
         return entity;
     }
 
