@@ -31,9 +31,9 @@ public class <daoClass> extends net.dbpersian.api.GenericDAO\<<entityClassName>>
     <columnDescrList:{columnDescr | public static final String <columnDescr.constColumnName> = "<columnDescr.sqlName>";
     }>
 
-    private <daoClass>(SQLiteOpenHelper dbOpenHelper, boolean isAsync, OnDatabaseOperationCompleteListener complete)
+    private <daoClass>(SQLiteOpenHelper dbOpenHelper, boolean isAsync, AsyncDatabaseOperation\<<entityClassName>> dbOp)
     {
-        super(dbOpenHelper, TABLE_NAME, isAsync, complete);
+        super(dbOpenHelper, TABLE_NAME, isAsync, dbOp);
     }
 
     private <daoClass>(SQLiteDatabase db)
@@ -68,9 +68,9 @@ public class <daoClass> extends net.dbpersian.api.GenericDAO\<<entityClassName>>
      *              New instance of <daoClass>. Since this method is asynchronous, most likely database will
      *              still be closed when this method returns.
      */
-    public static <daoClass> openAsync(SQLiteOpenHelper dbOpenHelper, OnDatabaseOperationCompleteListener complete)
+    public static <daoClass> openAsync(SQLiteOpenHelper dbOpenHelper, AsyncDatabaseOperation\<<entityClassName>> dbOp)
     {
-        return new <daoClass>(dbOpenHelper, true, complete);
+        return new <daoClass>(dbOpenHelper, true, dbOp);
     }
 
     /**
@@ -138,7 +138,11 @@ public <entityClassName> findBy<columnDescr.capitalizedJavaFieldName>(<columnDes
         Log.d(TAG, sql);
     \}
     <if(columnDescr.basicJavaType)>
+        <if(columnDescr.boolean)>
+    final String valueToQuery = value ? "1" : "0";
+        <else>
     final String valueToQuery = String.valueOf(value);
+        <endif>
     <elseif(columnDescr.stringJavaType)>
     final String valueToQuery = value;
     <else>
@@ -157,7 +161,11 @@ public <entityClassName> findBy<columnDescr.capitalizedJavaFieldName>(<columnDes
 public int deleteBy<columnDescr.capitalizedJavaFieldName>(<columnDescr.javaFieldType> value)
 {
     <if(columnDescr.basicJavaType)>
+        <if(columnDescr.boolean)>
+    final String valueToQuery = value ? "1" : "0";
+        <else>
     final String valueToQuery = String.valueOf(value);
+        <endif>
     <elseif(columnDescr.stringJavaType)>
     final String valueToQuery = value;
     <else>

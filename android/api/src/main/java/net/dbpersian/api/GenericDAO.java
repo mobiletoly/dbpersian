@@ -33,11 +33,11 @@ public abstract class GenericDAO<T>
      * Create DAO.
      * @param sqliteOpenHelper
      * @param tableName
-     * @param complete
+     * @param dbOp
      */
     public GenericDAO(final SQLiteOpenHelper sqliteOpenHelper, String tableName,
                       boolean isAsync,
-                      final OnDatabaseOperationCompleteListener<T> complete)
+                      final AsyncDatabaseOperation<T> dbOp)
     {
         if (sqliteOpenHelper == null) {
             throw new NullPointerException("<sqliteOpenHelper> parameter: must not be null");
@@ -48,8 +48,8 @@ public abstract class GenericDAO<T>
         mOwnerOfDatabase = true;
         mTableName = tableName;
         if (!isAsync) {
-            if (complete != null) {
-                throw new IllegalArgumentException("<complete> parameter must be null when isAsync parameter is false");
+            if (dbOp != null) {
+                throw new IllegalArgumentException("<dbOp> parameter must be null when isAsync parameter is false");
             }
             mDatabase = sqliteOpenHelper.getWritableDatabase();
             return;
@@ -58,15 +58,15 @@ public abstract class GenericDAO<T>
             @Override
             protected Void doInBackground(Void... params) {
                 mDatabase = sqliteOpenHelper.getWritableDatabase();
-                if (complete != null) {
-                    complete.doInBackground(GenericDAO.this);
+                if (dbOp != null) {
+                    dbOp.doInBackground(GenericDAO.this);
                 }
                 return null;
             }
             @Override
             protected void onPostExecute(Void aVoid) {
-                if (complete != null) {
-                    complete.onComplete(GenericDAO.this);
+                if (dbOp != null) {
+                    dbOp.onComplete(GenericDAO.this);
                 }
             }
         }.execute();
@@ -131,7 +131,7 @@ public abstract class GenericDAO<T>
         }
     }
 
-    public Collection<T> query(String sql, String[] selectionArgs)
+    public List<T> query(String sql, String[] selectionArgs)
     {
         final LinkedList<T> entries = new LinkedList<T>();
         Cursor c = null;
@@ -154,7 +154,7 @@ public abstract class GenericDAO<T>
      *          part of the SQL query that comes after "ORDER BY" clause. null, if you don't need order.
      * @return
      */
-    public Collection<T> queryAll(String orderBy)
+    public List<T> queryAll(String orderBy)
     {
         String sql = "SELECT * FROM " + mTableName;
         if (orderBy != null) {
@@ -190,6 +190,19 @@ public abstract class GenericDAO<T>
         }
     }
 
+    public void update(Collection<T> entities)
+    {
+        mDatabase.beginTransaction();
+        try {
+            for (final T entity : entities) {
+                update(entity);
+            }
+            mDatabase.setTransactionSuccessful();
+        } finally {
+            mDatabase.endTransaction();
+        }
+    }
+
     public void startAsync(final AsyncDatabaseOperation<T> op)
     {
         new AsyncTask<Void,Void,Void>() {
@@ -205,7 +218,11 @@ public abstract class GenericDAO<T>
         }.execute();
     }
 
-    public void startAsyncTransaction(final AsyncDatabaseOperation<T> op)
+    /**
+     * Perform asynchronous transaction.
+     * @param op
+     */
+    public void asyncTransaction(final AsyncDatabaseOperation<T> op)
     {
         new AsyncTask<Void,Void,Void>() {
             @Override
@@ -225,6 +242,19 @@ public abstract class GenericDAO<T>
                 op.onComplete(GenericDAO.this);
             }
         }.execute();
+    }
+
+
+    public void transaction(DatabaseOperation<T> dbOp)
+    {
+        final SQLiteDatabase db = GenericDAO.this.mDatabase;
+        db.beginTransaction();
+        try {
+            dbOp.execute(GenericDAO.this);
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
     }
 
     private synchronized CursorMetaEntry getCursorMetaEntry(Cursor cursor)
@@ -250,7 +280,6 @@ public abstract class GenericDAO<T>
     {
         public final int numColumns;
         public final HashMap<String,Integer> columnNamesToIndexes = new HashMap<String, Integer>();
-        //public final SparseIntArray indexToName;
 
         public CursorMetaEntry(Cursor c)
         {
@@ -262,7 +291,7 @@ public abstract class GenericDAO<T>
     }
 
 
-    public interface OnDatabaseOperationCompleteListener<T>
+    public interface AsyncDatabaseOperation<T>
     {
         /** Executed on background thread. Here you can perform all asynchronous operations,
          * that will be executed prior to calling onComplete on main UI thread. */
@@ -271,10 +300,10 @@ public abstract class GenericDAO<T>
         void onComplete(GenericDAO<T> dao);
     }
 
-    public interface AsyncDatabaseOperation<T> extends OnDatabaseOperationCompleteListener<T>
+    public interface DatabaseOperation<T>
     {
-        /** Executed on background thread. */
-        void doInBackground(GenericDAO<T> dao);
+        /** Executed on caller's thread. */
+        void execute(GenericDAO<T> dao);
     }
 
     protected Object deserializeBlob(byte[] data)

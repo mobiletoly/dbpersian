@@ -26,7 +26,7 @@ public class HelloAndroidActivity extends Activity
 
         final UserTaskDbHelper dbHelper = ((MainApplication)getApplicationContext()).getUserTaskDbHelper();
         final UserTaskDAO userTaskDAO = UserTaskDAO.openAsync(dbHelper,
-                new GenericDAO.OnDatabaseOperationCompleteListener<UserTask>() {
+                new GenericDAO.AsyncDatabaseOperation<UserTask>() {
                     @Override
                     public void doInBackground(GenericDAO<UserTask> dao) {
                     }

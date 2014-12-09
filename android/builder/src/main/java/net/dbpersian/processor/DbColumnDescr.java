@@ -31,6 +31,7 @@ class DbColumnDescr
     private boolean isBasicJavaType;
     private boolean isStringJavaType;
     private boolean isArrayJavaType;
+    private boolean isBooleanJavaType;
     
     private static final HashMap<TypeKind, String> TYPEKIND_TO_SQLDATATYPE = new HashMap<TypeKind, String>();
     static {
