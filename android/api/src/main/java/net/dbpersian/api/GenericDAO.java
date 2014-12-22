@@ -4,8 +4,6 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
-import android.os.AsyncTask;
 import android.util.Log;
 
 import java.io.*;
@@ -19,58 +17,9 @@ public abstract class GenericDAO<T>
 {
     private static final String TAG = GenericDAO.class.getSimpleName();
 
-    private final HashMap<Cursor, CursorMetaEntry> mCursorMetaEntries = new HashMap<Cursor, CursorMetaEntry>();
-    protected final String mTableName;
-    protected SQLiteDatabase mDatabase;
-    private boolean mOwnerOfDatabase;
-
-    public GenericDAO(SQLiteOpenHelper sqliteOpenHelper, String tableName)
-    {
-        this(sqliteOpenHelper, tableName, false, null);
-    }
-
-    /**
-     * Create DAO.
-     * @param sqliteOpenHelper
-     * @param tableName
-     * @param dbOp
-     */
-    public GenericDAO(final SQLiteOpenHelper sqliteOpenHelper, String tableName,
-                      boolean isAsync,
-                      final AsyncDatabaseOperation<T> dbOp)
-    {
-        if (sqliteOpenHelper == null) {
-            throw new NullPointerException("<sqliteOpenHelper> parameter: must not be null");
-        }
-        if (tableName == null) {
-            throw new NullPointerException("<tableName> parameter: must not be null");
-        }
-        mOwnerOfDatabase = true;
-        mTableName = tableName;
-        if (!isAsync) {
-            if (dbOp != null) {
-                throw new IllegalArgumentException("<dbOp> parameter must be null when isAsync parameter is false");
-            }
-            mDatabase = sqliteOpenHelper.getWritableDatabase();
-            return;
-        }
-        new AsyncTask<Void,Void,Void>() {
-            @Override
-            protected Void doInBackground(Void... params) {
-                mDatabase = sqliteOpenHelper.getWritableDatabase();
-                if (dbOp != null) {
-                    dbOp.doInBackground(GenericDAO.this);
-                }
-                return null;
-            }
-            @Override
-            protected void onPostExecute(Void aVoid) {
-                if (dbOp != null) {
-                    dbOp.onComplete(GenericDAO.this);
-                }
-            }
-        }.execute();
-    }
+    private final HashMap<Cursor, CursorMetaEntry> cursorMetaEntries = new HashMap<Cursor, CursorMetaEntry>();
+    protected final String tableName;
+    protected final SQLiteDatabase database;
 
     public GenericDAO(final SQLiteDatabase database, String tableName)
     {
@@ -80,36 +29,32 @@ public abstract class GenericDAO<T>
         if (!database.isOpen()) {
             throw new IllegalArgumentException("<database> parameter: database is not open");
         }
-        mDatabase = database;
-        mTableName = tableName;
+        this.database = database;
+        this.tableName = tableName;
     }
 
     public abstract ContentValues getEntityContentValues(T entity);
 
     protected abstract T readEntityFromCursor(Cursor c, CursorMetaEntry meta);
 
-
-    public SQLiteDatabase getDatabase() {
-        return mDatabase;
+    public SQLiteDatabase getDatabase()
+    {
+        return database;
     }
 
-    /** Close DAO object. */
-    public void close()
+    public String getTableName()
     {
-        if (mOwnerOfDatabase) {
-            mDatabase.close();
-        }
-        mDatabase = null;
+        return tableName;
     }
 
     /** Drop table. */
     public void dropTable()
     {
-        final String sql = "DROP TABLE " + mTableName;
+        final String sql = "DROP TABLE " + tableName;
         if (Log.isLoggable(TAG, Log.DEBUG)) {
             Log.d(TAG, sql);
         }
-        mDatabase.execSQL(sql);
+        database.execSQL(sql);
     }
 
     public T readEntityFromCursor(Cursor c)
@@ -122,7 +67,7 @@ public abstract class GenericDAO<T>
     {
         Cursor c = null;
         try {
-            c = mDatabase.rawQuery(sql, selectionArgs);
+            c = database.rawQuery(sql, selectionArgs);
             if (!c.moveToFirst()) { return null; }
             final CursorMetaEntry meta = getCursorMetaEntry(c);
             return readEntityFromCursor(c, meta);
@@ -136,7 +81,7 @@ public abstract class GenericDAO<T>
         final LinkedList<T> entries = new LinkedList<T>();
         Cursor c = null;
         try {
-            c = mDatabase.rawQuery(sql, selectionArgs);
+            c = database.rawQuery(sql, selectionArgs);
             final CursorMetaEntry meta = getCursorMetaEntry(c);
             while (c.moveToNext()) {
                 final T entity = readEntityFromCursor(c, meta);
@@ -156,7 +101,7 @@ public abstract class GenericDAO<T>
      */
     public List<T> queryAll(String orderBy)
     {
-        String sql = "SELECT * FROM " + mTableName;
+        String sql = "SELECT * FROM " + tableName;
         if (orderBy != null) {
             sql += " ORDER BY " + orderBy;
         }
@@ -165,7 +110,7 @@ public abstract class GenericDAO<T>
 
     public int delete(String whereClause, String[] whereArgs)
     {
-        return mDatabase.delete(mTableName, whereClause, whereArgs);
+        return database.delete(tableName, whereClause, whereArgs);
     }
 
     /** Insert entity into table. */
@@ -179,92 +124,38 @@ public abstract class GenericDAO<T>
      */
     public void insert(Collection<T> entities)
     {
-        mDatabase.beginTransaction();
+        database.beginTransaction();
         try {
             for (final T entity : entities) {
                 insert(entity);
             }
-            mDatabase.setTransactionSuccessful();
+            database.setTransactionSuccessful();
         } finally {
-            mDatabase.endTransaction();
+            database.endTransaction();
         }
     }
 
     public void update(Collection<T> entities)
     {
-        mDatabase.beginTransaction();
+        database.beginTransaction();
         try {
             for (final T entity : entities) {
                 update(entity);
             }
-            mDatabase.setTransactionSuccessful();
+            database.setTransactionSuccessful();
         } finally {
-            mDatabase.endTransaction();
-        }
-    }
-
-    public void startAsync(final AsyncDatabaseOperation<T> op)
-    {
-        new AsyncTask<Void,Void,Void>() {
-            @Override
-            protected Void doInBackground(Void... params) {
-                op.doInBackground(GenericDAO.this);
-                return null;
-            }
-            @Override
-            protected void onPostExecute(Void aVoid) {
-                op.onComplete(GenericDAO.this);
-            }
-        }.execute();
-    }
-
-    /**
-     * Perform asynchronous transaction.
-     * @param op
-     */
-    public void asyncTransaction(final AsyncDatabaseOperation<T> op)
-    {
-        new AsyncTask<Void,Void,Void>() {
-            @Override
-            protected Void doInBackground(Void... params) {
-                final SQLiteDatabase db = GenericDAO.this.mDatabase;
-                db.beginTransaction();
-                try {
-                    op.doInBackground(GenericDAO.this);
-                    db.setTransactionSuccessful();
-                } finally {
-                    db.endTransaction();
-                }
-                return null;
-            }
-            @Override
-            protected void onPostExecute(Void aVoid) {
-                op.onComplete(GenericDAO.this);
-            }
-        }.execute();
-    }
-
-
-    public void transaction(DatabaseOperation<T> dbOp)
-    {
-        final SQLiteDatabase db = GenericDAO.this.mDatabase;
-        db.beginTransaction();
-        try {
-            dbOp.execute(GenericDAO.this);
-            db.setTransactionSuccessful();
-        } finally {
-            db.endTransaction();
+            database.endTransaction();
         }
     }
 
     private synchronized CursorMetaEntry getCursorMetaEntry(Cursor cursor)
     {
-        CursorMetaEntry meta = mCursorMetaEntries.get(cursor);
+        CursorMetaEntry meta = cursorMetaEntries.get(cursor);
         if (meta != null) {
             return meta;
         }
         // Prior to adding new cursor to a map, we want to remove all cursor that are closed.
-        for (Iterator<Map.Entry<Cursor, CursorMetaEntry>> it = mCursorMetaEntries.entrySet().iterator(); it.hasNext(); ) {
+        for (Iterator<Map.Entry<Cursor, CursorMetaEntry>> it = cursorMetaEntries.entrySet().iterator(); it.hasNext(); ) {
             final Map.Entry<Cursor, CursorMetaEntry> entry = it.next();
             final Cursor c = entry.getKey();
             if (c.isClosed()) {
@@ -272,7 +163,7 @@ public abstract class GenericDAO<T>
             }
         }
         meta = new CursorMetaEntry(cursor);
-        mCursorMetaEntries.put(cursor, meta);
+        cursorMetaEntries.put(cursor, meta);
         return meta;
     }
 
@@ -290,21 +181,6 @@ public abstract class GenericDAO<T>
         }
     }
 
-
-    public interface AsyncDatabaseOperation<T>
-    {
-        /** Executed on background thread. Here you can perform all asynchronous operations,
-         * that will be executed prior to calling onComplete on main UI thread. */
-        void doInBackground(GenericDAO<T> dao);
-         /** Executed on main UI thread. */
-        void onComplete(GenericDAO<T> dao);
-    }
-
-    public interface DatabaseOperation<T>
-    {
-        /** Executed on caller's thread. */
-        void execute(GenericDAO<T> dao);
-    }
 
     protected Object deserializeBlob(byte[] data)
     {

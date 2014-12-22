@@ -18,7 +18,7 @@ public class UserTaskDbHelper extends AbstractUserTaskDbHelper
     {
         super.onCreate(db);
 
-        final UserTaskCategoryDAO userTaskCategoryDAO = UserTaskCategoryDAO.createForDatabase(db);
+        final UserTaskCategoryDAO userTaskCategoryDAO = new UserTaskCategoryDAO(db);
         final UserTaskCategory utcat01 = new UserTaskCategory();
         utcat01.setKey("home");
         utcat01.setLabel("Home");
@@ -28,7 +28,7 @@ public class UserTaskDbHelper extends AbstractUserTaskDbHelper
         userTaskCategoryDAO.insert(utcat01);
         userTaskCategoryDAO.insert(utcat02);
 
-        final UserTaskGroupDAO userTaskGroupDAO = UserTaskGroupDAO.createForDatabase(db);
+        final UserTaskGroupDAO userTaskGroupDAO = new UserTaskGroupDAO(db);
         final UserTaskGroup userTaskGroup = new UserTaskGroup();
         userTaskGroup.setKey("task001");
         userTaskGroup.setLabel("First task group");
@@ -45,7 +45,7 @@ public class UserTaskDbHelper extends AbstractUserTaskDbHelper
         userTask02.setRepeat(5);
         userTask02.setUserTaskGroupKey(userTaskGroup.getKey());
 
-        final UserTaskDAO userTaskDAO = UserTaskDAO.createForDatabase(db);
+        final UserTaskDAO userTaskDAO = new UserTaskDAO(db);
         userTaskDAO.insert(userTask01);
         userTaskDAO.insert(userTask02);
     }

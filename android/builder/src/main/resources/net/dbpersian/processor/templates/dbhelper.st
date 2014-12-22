@@ -9,12 +9,13 @@ package <package>;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
+
+import net.dbpersian.api.AbstractDbHelper;
 
 /**
  * Base database open helper class.
  */
-public abstract class <dbHelperClass> extends SQLiteOpenHelper
+public abstract class <dbHelperClass> extends AbstractDbHelper
 {
     private static final String DB_NAME = "<dbDescr.filename>";
     private static final int DB_VERSION = <dbDescr.version>;
@@ -36,10 +37,5 @@ public abstract class <dbHelperClass> extends SQLiteOpenHelper
     {
         <dbTableDescrs:{dbTableDescr | <dbTableDescr.daoJavaClassName>.createTable(db);
         }>
-    }
-
-    @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
-    {
     }
 }

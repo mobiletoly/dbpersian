@@ -1,18 +1,23 @@
 package net.dbpersian.demoapp;
 
 import android.app.Activity;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.Menu;
 import com.mobileyork.healthatwork.usertask.UserTask;
 import com.mobileyork.healthatwork.usertask.UserTaskDAO;
 import com.mobileyork.healthatwork.usertask.UserTaskDbHelper;
+import net.dbpersian.api.AbstractDbHelper;
 import net.dbpersian.api.GenericDAO;
 import net.dbpersian.processor.DAOClassBuilder;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 
 public class HelloAndroidActivity extends Activity
 {
+    private SQLiteDatabase database;
+
     /**
      * Called when the activity is first created.
      * @param savedInstanceState If the activity is being re-initialized after 
@@ -25,16 +30,20 @@ public class HelloAndroidActivity extends Activity
         setContentView(R.layout.activity_main);
 
         final UserTaskDbHelper dbHelper = ((MainApplication)getApplicationContext()).getUserTaskDbHelper();
-        final UserTaskDAO userTaskDAO = UserTaskDAO.openAsync(dbHelper,
-                new GenericDAO.AsyncDatabaseOperation<UserTask>() {
-                    @Override
-                    public void doInBackground(GenericDAO<UserTask> dao) {
-                    }
-                    @Override
-                    public void onComplete(GenericDAO<UserTask> dao) {
-                        System.err.println("**** userTaskDAO onComplete");
-                    }
-                });
+        dbHelper.openReadableAsync(new AbstractDbHelper.AsyncDatabaseOperation() {
+            @Override
+            public void doInBackground(SQLiteDatabase db) {
+            }
+            @Override
+            public void onComplete(SQLiteDatabase db) {
+                HelloAndroidActivity.this.database = db;
+                System.err.println("**** userTaskDAO onComplete");
+                final UserTaskDAO userTaskDAO = new UserTaskDAO(db);
+                final LinkedHashMap<String, UserTask> userTasks = userTaskDAO.queryAllAsKeyMap(null);
+                System.out.println("::: " + userTasks);
+            }
+        });
+
         {
             /*
             final SQLiteDatabase db = dbHelper.getReadableDatabase();
@@ -45,6 +54,15 @@ public class HelloAndroidActivity extends Activity
                     new String[]{"key002"});
             System.out.println("::: " + userTask);
             */
+        }
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        if (this.database != null) {
+            this.database.close();
+            this.database = null;
         }
     }
 

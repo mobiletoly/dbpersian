@@ -10,24 +10,26 @@ class DbTableDescr
 {
     private static final String DAO_CLASS_NAME_FMT = "%sDAO";
 
-    private final TypeElement mDbTableElement;
-    private final DbTable mDbTable;
-    private final String mSqlCreateTable;
-    private final List<DbColumnDescr> mDbColumnDescrList;
-    private final List<DbForeignKeyReaderDescr> mDbForeignKeyReaderDescrs;
-    private final String mDaoJavaClassName;
+    private final TypeElement dbTableElement;
+    private final DbTable dbTable;
+    private final String sqlCreateTable;
+    private final List<DbColumnDescr> dbColumnDescrList;
+    private final List<DbForeignKeyReaderDescr> dbForeignKeyReaderDescrs;
+    private final String daoJavaClassName;
+    private final String daoJavaVariableName;
 
     public DbTableDescr(TypeElement dbTableElement,
                         DbTable dbTable,
                         List<DbColumnDescr> dbColumnDescrList,
                         List<DbForeignKeyReaderDescr> dbForeignKeyReaderDescrs)
     {
-        mDbTableElement = dbTableElement;
-        mDbTable = dbTable;
-        mDbColumnDescrList = dbColumnDescrList;
-        mDbForeignKeyReaderDescrs = dbForeignKeyReaderDescrs;
-        mSqlCreateTable = sqlCreateTable();
-        mDaoJavaClassName = String.format(DAO_CLASS_NAME_FMT, this.mDbTableElement.getSimpleName());
+        this.dbTableElement = dbTableElement;
+        this.dbTable = dbTable;
+        this.dbColumnDescrList = dbColumnDescrList;
+        this.dbForeignKeyReaderDescrs = dbForeignKeyReaderDescrs;
+        sqlCreateTable = sqlCreateTable();
+        daoJavaClassName = String.format(DAO_CLASS_NAME_FMT, this.dbTableElement.getSimpleName());
+        this.daoJavaVariableName = Character.toLowerCase(daoJavaClassName.charAt(0)) + daoJavaClassName.substring(1);
     }
 
     /**
@@ -35,38 +37,59 @@ class DbTableDescr
      */
     public String getSqlCreateTable()
     {
-        return mSqlCreateTable;
+        return sqlCreateTable;
     }
 
     /**
-     * @return      Table name.
+     * @return      Table name in database.
      */
     public String getSqlName()
     {
-        return mDbTable.sqlName();
+        return dbTable.sqlName();
     }
 
+    /**
+     * @return      Java class name for table in database.
+     */
     public String getJavaClassName()
     {
-        return mDbTableElement.getSimpleName().toString();
+        return dbTableElement.getSimpleName().toString();
     }
 
+    /**
+     * @return      List of column descriptors for this table.
+     */
     public List<DbColumnDescr> getDbColumnDescrList() {
-        return mDbColumnDescrList;
+        return dbColumnDescrList;
     }
 
-    public List<DbForeignKeyReaderDescr> getDbForeignKeyReaderDescrs() {
-        return mDbForeignKeyReaderDescrs;
+    public List<DbForeignKeyReaderDescr> getDbForeignKeyReaderDescrs()
+    {
+        return dbForeignKeyReaderDescrs;
     }
 
+    /**
+     * @return      Java name for DAO class.
+     */
     public String getDaoJavaClassName()
     {
-        return mDaoJavaClassName;
+        return daoJavaClassName;
     }
 
+    /**
+     * @return      Java name for variable of DAO class type.
+     */
+    public String getDaoJavaVariableName()
+    {
+        return daoJavaVariableName;
+    }
+
+    /**
+     * @return      true, if this table contains primary key.
+     */
     public boolean isContainPrimaryKey()
     {
-        for (final DbColumnDescr dbColumnDescr : mDbColumnDescrList) {
+        for (final DbColumnDescr dbColumnDescr : dbColumnDescrList) {
             if (dbColumnDescr.isPrimaryKey()) {
                 return true;
             }
@@ -76,10 +99,10 @@ class DbTableDescr
 
     public String getOnEntityLoad()
     {
-        if (mDbTable.onEntityLoad() == null || mDbTable.onEntityLoad().isEmpty()) {
+        if (dbTable.onEntityLoad() == null || dbTable.onEntityLoad().isEmpty()) {
             return null;
         }
-        return mDbTable.onEntityLoad();
+        return dbTable.onEntityLoad();
     }
 
     /**
@@ -88,10 +111,18 @@ class DbTableDescr
     private String sqlCreateTable()
     {
         final StringBuilder sbld = new StringBuilder("CREATE TABLE ");
-        sbld.append(mDbTable.sqlName());
+        sbld.append(dbTable.sqlName());
         sbld.append("(\"\n");
+        buildColumnListToCreateTable(sbld);
+        buildForeignKeyConstraintsToCreateTable(sbld);
+        sbld.append("                + \");");
+        return sbld.toString();
+    }
+
+    private void buildColumnListToCreateTable(StringBuilder sbld)
+    {
         boolean isFirst = true;
-        for (final DbColumnDescr dbColumnDescr : mDbColumnDescrList) {
+        for (final DbColumnDescr dbColumnDescr : dbColumnDescrList) {
             sbld.append("                + \"");
             if (isFirst) {
                 isFirst = false;
@@ -104,7 +135,11 @@ class DbTableDescr
             sbld.append(dbColumnDescr.getSqlCreateDataType());
             sbld.append("\"\n");
         }
-        for (final DbColumnDescr dbColumnDescr : mDbColumnDescrList) {
+    }
+
+    private void buildForeignKeyConstraintsToCreateTable(StringBuilder sbld)
+    {
+        for (final DbColumnDescr dbColumnDescr : dbColumnDescrList) {
             DbColumn dbColumn = dbColumnDescr.getDbColumn();
             if (dbColumn.fkTable() != null && dbColumn.fkTable().length() > 0) {
                 if (dbColumn.fkColumn() == null || dbColumn.fkColumn().length() == 0) {
@@ -122,7 +157,5 @@ class DbTableDescr
                 sbld.append(")\"\n");
             }
         }
-        sbld.append("                + \");");
-        return sbld.toString();
     }
 }

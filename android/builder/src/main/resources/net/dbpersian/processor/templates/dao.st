@@ -11,7 +11,6 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 import java.util.Collection;
 import java.util.HashMap;
@@ -31,55 +30,9 @@ public class <daoClass> extends net.dbpersian.api.GenericDAO\<<entityClassName>>
     <columnDescrList:{columnDescr | public static final String <columnDescr.constColumnName> = "<columnDescr.sqlName>";
     }>
 
-    private <daoClass>(SQLiteOpenHelper dbOpenHelper, boolean isAsync, AsyncDatabaseOperation\<<entityClassName>> dbOp)
-    {
-        super(dbOpenHelper, TABLE_NAME, isAsync, dbOp);
-    }
-
-    private <daoClass>(SQLiteDatabase db)
+    public <daoClass>(SQLiteDatabase db)
     {
         super(db, TABLE_NAME);
-    }
-
-    /**
-     * Creates DAO object. This method is executed synchronously in a context of current thread.
-     * If database is not open yet, it will be open. If database is not created yet, it will be created.
-     * Since there is always a chance that this method might take some time to finish execution, it is
-     * recommended not to call it from main UI thread, unless you are absolutely sure that database is
-     * already open.
-     * @param dbOpenHelper
-     *              Database open helper.
-     * @return
-     *              New instance of <daoClass> with database open.
-     */
-    public static <daoClass> open(SQLiteOpenHelper dbOpenHelper)
-    {
-        return new <daoClass>(dbOpenHelper, false, null);
-    }
-
-    /**
-     * Creates DAO object. This method is executed asynchronously on its own thread..
-     * If database is not open yet, it will be open. If database is not created yet, it will be created.
-     * @param dbOpenHelper
-     *              Database open helper.
-     * @param complete
-     *              Completion listener to notify, when database is open and ready to use.
-     * @return
-     *              New instance of <daoClass>. Since this method is asynchronous, most likely database will
-     *              still be closed when this method returns.
-     */
-    public static <daoClass> openAsync(SQLiteOpenHelper dbOpenHelper, AsyncDatabaseOperation\<<entityClassName>> dbOp)
-    {
-        return new <daoClass>(dbOpenHelper, true, dbOp);
-    }
-
-    /**
-     * Creates DAO object for already open database. New instance will not owe db object, passed as an argument,
-     * calling close() for this DAO object does nothing, so you don't have to call it all.
-     */
-    public static <daoClass> createForDatabase(SQLiteDatabase db)
-    {
-        return new <daoClass>(db);
     }
 
     /**
@@ -260,7 +213,7 @@ fetch<fkrDescr.capitalizedJavaFieldName>(entity);
  */
 public void fetch<fkrDescr.capitalizedJavaFieldName>(<entityClassName> entity)
 {
-    final <fkrDescr.javaFieldType>DAO dao = <fkrDescr.javaFieldType>DAO.createForDatabase(mDatabase);
+    final <fkrDescr.javaFieldType>DAO dao = new <fkrDescr.javaFieldType>DAO(database);
     final <fkrDescr.javaFieldType> entityRef = dao.findBy<fkrDescr.capitalizedRefColumnName>(entity.<fkrDescr.refDbColumnDescr.javaFieldName>);
     entity.<fkrDescr.javaFieldName> = entityRef;
 \}
@@ -276,11 +229,11 @@ public void fetch<fkrDescr.capitalizedJavaFieldName>(<entityClassName> entity)
         final ContentValues cv = getEntityContentValues(entity);
         <if(tableDescr.containPrimaryKey)>
         <columnDescrList:{columnDescr | <if(columnDescr.primaryKey)>
-entity.<columnDescr.javaFieldName> = (<columnDescr.javaFieldType>)mDatabase.insertOrThrow(mTableName, null, cv);
+entity.<columnDescr.javaFieldName> = (<columnDescr.javaFieldType>)database.insertOrThrow(tableName, null, cv);
         <endif>
             }>
         <else>
-        mDatabase.insertOrThrow(mTableName, null, cv);
+        database.insertOrThrow(tableName, null, cv);
         <endif>
     }
 
@@ -299,7 +252,7 @@ whereClause = "<columnDescr.sqlName> = ?";
 whereArgs = entity.<columnDescr.javaFieldName>.toString();
         <endif>
         }>
-        final int numUpdatedRows = mDatabase.update(mTableName, cv, whereClause, new String[]{whereArgs});
+        final int numUpdatedRows = database.update(tableName, cv, whereClause, new String[]{whereArgs});
         if (Log.isLoggable(TAG, Log.DEBUG)) {
             Log.d(TAG, "Number of updated records: " + numUpdatedRows);
         }
