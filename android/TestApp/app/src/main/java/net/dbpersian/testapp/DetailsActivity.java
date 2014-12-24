@@ -54,12 +54,6 @@ public class DetailsActivity extends ActionBarActivity
         openMusicDatabaseAsync();
     }
 
-    @Override
-    protected void onDestroy()
-    {
-        super.onDestroy();
-    }
-
     private void openMusicDatabaseAsync()
     {
         Log.i(TAG, "Request to open database asynchronously");
@@ -87,13 +81,6 @@ public class DetailsActivity extends ActionBarActivity
                 showDetails();
             }
         });
-    }
-
-
-    public void reloadDetailsOnClick(View button)
-    {
-        boolean isOpen = musicDatabase.isOpen();
-        System.out.println(":::: " + isOpen);
     }
 
     private void showDetails()

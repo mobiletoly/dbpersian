@@ -53,12 +53,6 @@ public class MainActivity extends ActionBarActivity
         openMusicDatabaseAsync();
     }
 
-    @Override
-    protected void onDestroy()
-    {
-        super.onDestroy();
-    }
-
     private void openMusicDatabaseAsync()
     {
         Log.i(TAG, "Request to open database asynchronously");
@@ -75,10 +69,18 @@ public class MainActivity extends ActionBarActivity
             {
                 Log.i(TAG, "Let's finish some database work on a background thread");
 
-                printDatabaseRecordsToLog(database);
+                Log.i(TAG, "---- Genres ----");
+                final Map<String, Genre> allGenres = dbHelper.getAllGenres();
+                for (final Genre genre : allGenres.values()) {
+                    Log.i(TAG, "*   " + genre.getCode() + " / " + genre.getName());
+                }
+
+                Log.i(TAG, "---- Albums ----");
+                final AlbumDAO albumDAO = new AlbumDAO(database);
+                final List<Album> albums = albumDAO.queryAll(/*ORDER BY*/"name");
+                printAlbums(albums);
 
                 Log.i(TAG, "---- Albums released in 1991 ---");
-                final AlbumDAO albumDAO = new AlbumDAO(database);
                 final List<Album> albums1991 = albumDAO.queryByYearReleased(1991);
                 printAlbums(albums1991);
 
@@ -106,27 +108,6 @@ public class MainActivity extends ActionBarActivity
         final Intent intent = new Intent(this, DetailsActivity.class);
         intent.putExtra(DetailsActivity.PARAM_ALBUM_ID, selectedAlbum.getId());
         startActivity(intent);
-    }
-
-    public void printToLogOnClick(View button)
-    {
-        printDatabaseRecordsToLog(musicDatabase);
-    }
-
-    private void printDatabaseRecordsToLog(SQLiteDatabase database)
-    {
-        final MusicDbHelper dbHelper = ((MainApplication)getApplicationContext()).getMusicDbHelper();
-
-        Log.i(TAG, "---- Genres ----");
-        final Map<String, Genre> allGenres = dbHelper.getAllGenres();
-        for (final Genre genre : allGenres.values()) {
-            Log.i(TAG, "*   " + genre.getCode() + " / " + genre.getName());
-        }
-
-        Log.i(TAG, "---- Albums ----");
-        final AlbumDAO albumDAO = new AlbumDAO(database);
-        final List<Album> albums = albumDAO.queryAll(/*ORDER BY*/"name");
-        printAlbums(albums);
     }
 
     private void printAlbums(List<Album> albums)
