@@ -7,35 +7,35 @@ import net.dbpersian.annotations.db.DbTable;
 @DbTable(sqlName = "user_task", onEntityLoad = "onLoad")
 public final class UserTask
 {
-    @DbColumn(name = "id", primaryKey = true)
+    @DbColumn(sqlName = "id", primaryKey = true)
     Long id;
     
-    @DbColumn(name = "key", indexName = "idx_usertask_key", unique = true, notNull = true)
+    @DbColumn(sqlName = "key", indexName = "idx_usertask_key", unique = true, notNull = true)
     String key;
 
-    @DbColumn(name = "usertaskgroup_key", fkTable = "user_task_group", fkColumn = "key")
+    @DbColumn(sqlName = "usertaskgroup_key", fkTable = "user_task_group", fkColumn = "key")
     String userTaskGroupKey;
     @DbForeignKeyReader(refField = "userTaskGroupKey")
     UserTaskGroup userTaskGroup;
 
-    @DbColumn(name = "usertaskcategory_key", fkTable = "user_task_category", fkColumn = "key")
+    @DbColumn(sqlName = "usertaskcategory_key", fkTable = "user_task_category", fkColumn = "key")
     String userTaskCategoryKey;
     @DbForeignKeyReader(refField = "userTaskCategoryKey")
     UserTaskGroup userTaskCategory;
     
-    @DbColumn(name = "label", notNull = true)
+    @DbColumn(sqlName = "label", notNull = true)
     String label;
     
-    @DbColumn(name = "repeat")
+    @DbColumn(sqlName = "repeat")
     Integer repeat;
 
-    @DbColumn(name = "frame_indices")
+    @DbColumn(sqlName = "frame_indices")
     int[] frameIndices;
 
-    @DbColumn(name = "full_name", serializable = true)
+    @DbColumn(sqlName = "full_name", serializable = true)
     UserFullName userFullName;
 
-    @DbColumn(name = "enabled")
+    @DbColumn(sqlName = "enabled")
     boolean enabled;
 
 

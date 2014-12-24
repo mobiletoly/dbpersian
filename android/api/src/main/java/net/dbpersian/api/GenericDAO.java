@@ -21,6 +21,9 @@ public abstract class GenericDAO<T>
     protected final String tableName;
     protected final SQLiteDatabase database;
 
+    private boolean isAutoFetchForeignKeyReaders = true;
+
+
     public GenericDAO(final SQLiteDatabase database, String tableName)
     {
         if (database == null) {
@@ -31,6 +34,25 @@ public abstract class GenericDAO<T>
         }
         this.database = database;
         this.tableName = tableName;
+    }
+
+    /**
+     * Enable auto-resolving of all foreign key objects to ensure that when user queries for an entity,
+     * all fields marked with @DbForeignKeyReader annotation are getting queried from a database. By default
+     * this mode is disabled. You can disable auto-fetching and in this case you have to manually call methods
+     * fetchAllForeignKeyReaders() or fetchXXXXXX() to fetch objects referred by foreign keys.
+     */
+    public void setAutoFetchForeignKeyReaders(boolean flag)
+    {
+        isAutoFetchForeignKeyReaders = flag;
+    }
+
+    /**
+     * @return  true, if auto fetch mode to resolve foreign key objects is enabled; false, otherwise.
+     */
+    public boolean isAutoFetchForeignKeyReaders()
+    {
+        return isAutoFetchForeignKeyReaders;
     }
 
     public abstract ContentValues getEntityContentValues(T entity);
@@ -46,6 +68,7 @@ public abstract class GenericDAO<T>
     {
         return tableName;
     }
+
 
     /** Drop table. */
     public void dropTable()

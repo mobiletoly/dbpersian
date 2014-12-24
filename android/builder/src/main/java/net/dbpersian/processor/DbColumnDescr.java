@@ -99,7 +99,7 @@ class DbColumnDescr
 
     public String getSqlName()
     {
-        return dbColumn.name();
+        return dbColumn.sqlName();
     }
     
     public String getJavaFieldName()
@@ -246,6 +246,7 @@ class DbColumnDescr
         if (dbColumn.primaryKey()) {
             sqlDataTypeBld.append(" PRIMARY KEY");
             this.isIndexed = true;
+            this.isUnique = true;
         }
         else if (dbColumn.notNull()) {
             sqlDataTypeBld.append(" NOT NULL");
@@ -276,7 +277,7 @@ class DbColumnDescr
         sqlCreateIndexBld.append(" ON ");
         sqlCreateIndexBld.append(dbTable.sqlName());
         sqlCreateIndexBld.append('(');
-        sqlCreateIndexBld.append(this.dbColumn.name());
+        sqlCreateIndexBld.append(this.dbColumn.sqlName());
         sqlCreateIndexBld.append(")");
         sqlCreateIndexBld.append(';');
 

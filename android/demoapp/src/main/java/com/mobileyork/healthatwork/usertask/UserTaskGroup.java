@@ -6,13 +6,13 @@ import net.dbpersian.annotations.db.DbTable;
 @DbTable(sqlName = "user_task_group")
 public final class UserTaskGroup
 {
-    @DbColumn(name = "id", primaryKey = true)
+    @DbColumn(sqlName = "id", primaryKey = true)
     Long id;
 
-    @DbColumn(name = "key", indexName = "idx_usertaskgroup_key", unique = true)
+    @DbColumn(sqlName = "key", indexName = "idx_usertaskgroup_key", unique = true)
     String key;
 
-    @DbColumn(name = "label")
+    @DbColumn(sqlName = "label")
     String label;
 
     public Long getId() {

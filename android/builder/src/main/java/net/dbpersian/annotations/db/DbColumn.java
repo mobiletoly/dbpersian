@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE)
 public @interface DbColumn
 {
-    String name();
+    String sqlName();
     String indexName() default "";
     boolean primaryKey() default false;
     boolean unique() default false;

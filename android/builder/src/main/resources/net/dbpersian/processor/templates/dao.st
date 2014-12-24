@@ -24,8 +24,6 @@ public class <daoClass> extends net.dbpersian.api.GenericDAO\<<entityClassName>>
 {
     private static final String TAG = "<daoClass>";
     public static final String TABLE_NAME = "<tableDescr.sqlName>";
-
-    private boolean isAutoFetchForeignKeyReaders = false;
     
     <columnDescrList:{columnDescr | public static final String <columnDescr.constColumnName> = "<columnDescr.sqlName>";
     }>
@@ -33,29 +31,6 @@ public class <daoClass> extends net.dbpersian.api.GenericDAO\<<entityClassName>>
     public <daoClass>(SQLiteDatabase db)
     {
         super(db, TABLE_NAME);
-    }
-
-    /**
-     * Enable auto-resolving of all foreign key objects to ensure that when user queries for an entity,
-     * all fields marked with @DbForeignKeyReader annotation are getting queried from a database. By default
-     * this mode is enabled. You can disable auto-fetching and in this case you have to manually call methods
-     * to fetch objects referred by foreign keys:
-     *     - fetchAllForeignKeyReaders(entity)
-     <fkReaderDescrList:{fkrDescr |
-*     - fetch<fkrDescr.capitalizedJavaFieldName>(entity)
-     }>     * are fetched from a database.
-     */
-    public void setAutoFetchForeignKeyReaders(boolean flag)
-    {
-        isAutoFetchForeignKeyReaders = flag;
-    }
-
-    /**
-     * @return  true, if auto fetch mode to resolve foreign key objects is enabled; false, otherwise.
-     */
-    public boolean isAutoFetchForeignKeyReaders()
-    {
-        return isAutoFetchForeignKeyReaders;
     }
 
     /**
@@ -78,15 +53,30 @@ db.execSQL("<columnDescr.sqlCreateIndex>");
 
     <columnDescrList:{columnDescr | <if(columnDescr.indexed)>
 /**
- * Query a single instance of <entityClassName> object from the table.
+<if(columnDescr.unique)>
+ * Query a single instance of <entityClassName> class from the table.
+<else>
+ * Query a list of instances of <entityClassName> class from the table.
+<endif>
  * This request is based on "<columnDescr.sqlName>" column (<entityClassName>.<columnDescr.javaFieldType> class member)
  * matching the value provided as a parameter.
  * @param value     Value this request is looking for.
+<if(columnDescr.unique)>
  * @return  Instance of <entityClassName> object when object is found; null, otherwise.
+<else>
+ * @return  List of <entityClassName> objects.
+<endif>
  */
-public <entityClassName> findBy<columnDescr.capitalizedJavaFieldName>(<columnDescr.javaFieldType> value)
+    <if(columnDescr.unique)>
+public <entityClassName> queryBy<columnDescr.capitalizedJavaFieldName>(<columnDescr.javaFieldType> value)
 {
     final String sql = "SELECT * FROM <tableDescr.sqlName> WHERE <columnDescr.sqlName> = ? LIMIT 1";
+    <else>
+public java.util.List\<<entityClassName>> queryBy<columnDescr.capitalizedJavaFieldName>(<columnDescr.javaFieldType> value)
+{
+    final String sql = "SELECT * FROM <tableDescr.sqlName> WHERE <columnDescr.sqlName> = ?";
+    <endif>
+
     if (Log.isLoggable(TAG, Log.DEBUG)) {
         Log.d(TAG, sql);
     \}
@@ -102,7 +92,11 @@ public <entityClassName> findBy<columnDescr.capitalizedJavaFieldName>(<columnDes
     final String valueToQuery = value.toString();
     <endif>
     final String[] selections = new String[]{ valueToQuery \};
+    <if(columnDescr.unique)>
     return queryForSingleResult(sql, selections);
+    <else>
+    return query(sql, selections);
+    <endif>
 \}
 
 /**
@@ -165,6 +159,9 @@ if (<columnDescr.javaFieldName>Idx != null) {
     <endif>
 \}
         }>
+        if (isAutoFetchForeignKeyReaders()) {
+            fetchAllForeignKeyReaders(entity);
+        }
     <if(tableDescr.onEntityLoad)>
         entity.<tableDescr.onEntityLoad>();
     <endif>
@@ -214,7 +211,7 @@ fetch<fkrDescr.capitalizedJavaFieldName>(entity);
 public void fetch<fkrDescr.capitalizedJavaFieldName>(<entityClassName> entity)
 {
     final <fkrDescr.javaFieldType>DAO dao = new <fkrDescr.javaFieldType>DAO(database);
-    final <fkrDescr.javaFieldType> entityRef = dao.findBy<fkrDescr.capitalizedRefColumnName>(entity.<fkrDescr.refDbColumnDescr.javaFieldName>);
+    final <fkrDescr.javaFieldType> entityRef = dao.queryBy<fkrDescr.capitalizedRefColumnName>(entity.<fkrDescr.refDbColumnDescr.javaFieldName>);
     entity.<fkrDescr.javaFieldName> = entityRef;
 \}
 
