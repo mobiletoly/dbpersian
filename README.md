@@ -1,4 +1,4 @@
 dbpersian
 =========
 
-Database Persistent Annotations
+Database Persistence Annotations
