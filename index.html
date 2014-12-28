@@ -1,56 +1,99 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-
   <head>
-    <meta charset='utf-8'>
+    <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="description" content="DBPersian : Database Persistence Annotations for Android">
+    <title>DBPersian by mobiletoly</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/main.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
-
-    <title>DBPersian</title>
   </head>
-
   <body>
 
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/mobiletoly/dbpersian">View on GitHub</a>
+      <header>
+        <h1>DBPersian</h1>
+        <p>Database Persistence Annotations for Android</p>
+      </header>
 
-          <h1 id="project_title">DBPersian</h1>
-          <h2 id="project_tagline">Database Persistence Annotations for Android</h2>
+      <div id="banner">
+        <span id="logo"></span>
 
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/mobiletoly/dbpersian/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/mobiletoly/dbpersian/tarball/master">Download this project as a tar.gz file</a>
-            </section>
-        </header>
-    </div>
+        <a href="https://github.com/mobiletoly/dbpersian" class="button fork"><strong>View On GitHub</strong></a>
+        <div class="downloads">
+          <span>Downloads:</span>
+          <ul>
+            <li><a href="https://github.com/mobiletoly/dbpersian/zipball/master" class="button">ZIP</a></li>
+            <li><a href="https://github.com/mobiletoly/dbpersian/tarball/master" class="button">TAR</a></li>
+          </ul>
+        </div>
+      </div><!-- end banner -->
 
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
+    <div class="wrapper">
+      <nav>
+        <ul></ul>
+      </nav>
+      <section>
         <h3>
 <a id="dbpersian---database-persistence-annotations-for-android" class="anchor" href="#dbpersian---database-persistence-annotations-for-android" aria-hidden="true"><span class="octicon octicon-link"></span></a>DBPersian - Database Persistence Annotations for Android</h3>
 
 <p>DBPersian is a simple and elegant framework to help you to deal with a routine tasks such as database access. This is a pretty thin layer in between SQLite database and Android application, mostly designed to provide a convenient way to serialize/deserialize entities to/from SQLite database based on Java annotations. The primary goal is to keep developer as close to the database as possible while getting rid of some burden and boilerplate code. Also performance is a key consideration for DBPersian, so no reflections and other relatively slow approaches, everything is done via generating code in compile time, so hopefully your code will be as fast as if you would write it by yourself.</p>
 
-<p>Alright, let's get down to business. The following tutorial assumes that you are using Android Studio for your development. We are going to write a simple Music Collection application, that will help you to start using DBPersian and will show you a best practices at the same time. We are going to use a step-by-step approach.</p>
+<p>Alright, let's get down to business. The following tutorial assumes that you are using Android Studio with gradle for your development. We are going to write a simple Music Collection application, that will help you to start using DBPersian and will show you a best practices at the same time. We are going to use a step-by-step approach.</p>
 
 <p>You can create a new Android project or just simply take a look at <a href="https://github.com/mobiletoly/dbpersian/tree/master/android/TestApp">demo code</a> repository which we have tried to keep as simple as possible.</p>
-      </section>
-    </div>
 
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">DBPersian maintained by <a href="https://github.com/mobiletoly">mobiletoly</a></p>
-        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+<p>At first let's take a look how is gradle file looks like</p>
+
+<pre><code>...
+// We need APT plugin to perform compile-time annotations processing
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        // --- DBPersian uses APT (annotation processor), so this plugin is required
+        classpath 'com.neenbedankt.gradle.plugins:android-apt:1.4'
+    }
+    ...
+}
+
+apply plugin: 'com.android.application'
+// --- Apply APT plugin
+apply plugin: 'com.neenbedankt.android-apt'
+
+android {
+    ...
+}
+
+
+dependencies {
+    repositories {
+        ...
+        mavenCentral()
+    }
+
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+
+    // --- Add dbpersian dependencies
+    compile 'net.dbpersian:api:0.5'
+    provided 'net.dbpersian:builder:0.5'
+    apt 'net.dbpersian:builder:0.5'
+</code></pre>
+
+<p>}</p>
+      </section>
+      <footer>
+        <p>Project maintained by <a href="https://github.com/mobiletoly">mobiletoly</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></small></p>
       </footer>
     </div>
-
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
     
-
   </body>
 </html>
