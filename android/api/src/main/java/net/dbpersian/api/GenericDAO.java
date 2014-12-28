@@ -11,6 +11,7 @@ import java.util.*;
 
 /**
  * Abstract DAO class.
+ *
  * @author tpochkin
  */
 public abstract class GenericDAO<T>
