@@ -77,11 +77,34 @@ dependencies {
     compile 'net.dbpersian:api:0.5'
     provided 'net.dbpersian:builder:0.5'
     apt 'net.dbpersian:builder:0.5'
+}
 </code></pre>
 
-<p>}</p>
-
 <p>What you want to do next is to create a database helper that allows you to handle things like opening database, upgrading database and most important - DBPersian will generate a code to take care of creating database based on schemas that you specify with annotations.</p>
+
+<p>Let's create a database helper file that takes care of creating/opening a database.</p>
+
+<p>Since we don't have any plugins for Android Studio yet, the next step is a little cumbersome. Let's create a class MusicDbHelper:</p>
+
+<pre><code>import net.dbpersian.annotations.db.Database;
+...
+@Database(filename = "music.db")
+public class MusicDbHelper { }
+</code></pre>
+
+<p>and now it is time to rebuild a project (menu Build / Rebuild Project). If everything is OK then AbstractMusicDbHelper class will be generated for you. So this time we want to extend this class</p>
+
+<pre><code>import net.dbpersian.annotations.db.Database;
+...
+@Database(filename = "music.db")
+public class MusicDbHelper extend AbstractMusicDbHelper
+{
+    ...
+}
+</code></pre>
+
+<p>Take a look at full implementation of this class: <a href="https://github.com/mobiletoly/dbpersian/blob/master/android/TestApp/app/src/main/java/net/dbpersian/testapp/music/MusicDbHelper.java">here</a>
+The most important part so far is a <a href="https://github.com/Database" class="user-mention">@Database</a> annotation. It is very simple to use, just specify a database name via <strong>filename</strong> parameter and DBPersian will take care of generating a code for you to help you out in creating and opening a SQLite database named "music.db".</p>
       </section>
     </div>
 
