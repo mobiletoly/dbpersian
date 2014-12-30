@@ -165,6 +165,10 @@ or (to fetch all field annotated by @DbForeignKeyReader if you have more than on
     albumDAO.update(album);
     artistDAO.update(artist);    // yep, this one is required</p>
 
+<p>Also as you see our
+    Genre genre
+declaration does not have a @DbForeignKeyReader annotation. We did it on purprose. Sometime you want to avoid an extra SQL request. Let's say we know that we always read a list of all genres when application starts, since it is a relative low volume of data. In this case we might prefer not to do a separate request to "genre" table and instead we could manually assign a "genre" field inside our code.</p>
+
 <h3>
 <a id="database-helper" class="anchor" href="#database-helper" aria-hidden="true"><span class="octicon octicon-link"></span></a>Database helper</h3>
 
