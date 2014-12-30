@@ -107,6 +107,8 @@ public class Artist
 }
 </code></pre>
 
+<p>@DbTable annotation with sqlName parameter instructs DBPersian to create a table "artists" inside a database. "id" field has an annotation @DbColumn with primaryKey attribute equals to "true". It ensures that table has a <a href="https://www.sqlite.org/lang_createtable.html">primary key</a> and values are auto-assigned by SQLite. That is why getId() getter method, but don't have a setter, because DBersian takes care of creating a unique "id" field, so you don't need to assign "id" field, it's already taken care of. At this point you might be surprised why we don't declare "private Long id" instead of "Long id". Reasons is simple, DBPersian generates a code that needs to have access to class fields. Please make sure that you have a package-level code access for instances you are planning to persist in your entity classes (don't use "private" modifier in your class for those fields).</p>
+
 <h3>
 <a id="database-helper" class="anchor" href="#database-helper" aria-hidden="true"><span class="octicon octicon-link"></span></a>Database helper</h3>
 
