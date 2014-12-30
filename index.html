@@ -107,7 +107,63 @@ public class Artist
 }
 </code></pre>
 
-<p>@DbTable annotation with sqlName parameter instructs DBPersian to create a table "artists" inside a database. "id" field has an annotation @DbColumn with primaryKey attribute equals to "true". It ensures that table has a <a href="https://www.sqlite.org/lang_createtable.html">primary key</a> and values are auto-assigned by SQLite. That is why getId() getter method, but don't have a setter, because DBersian takes care of creating a unique "id" field, so you don't need to assign "id" field, it's already taken care of. At this point you might be surprised why we don't declare "private Long id" instead of "Long id". Reasons is simple, DBPersian generates a code that needs to have access to class fields. Please make sure that you have a package-level code access for instances you are planning to persist in your entity classes (don't use "private" modifier in your class for those fields).</p>
+<p>@DbTable annotation with sqlName parameter instructs DBPersian to create a table "artist" inside a SQLite database. "id" field has an annotation @DbColumn with primaryKey attribute equals to "true". It ensures that table has a <a href="https://www.sqlite.org/lang_createtable.html">primary key</a> and values are auto-assigned by SQLite. That is why getId() getter method, but don't have a setter, because DBersian takes care of creating a unique "id" field, so you don't need to assign "id" field, it's already taken care of. At this point you might be surprised why we don't declare "private Long id" instead of "Long id". Reasons is simple, DBPersian generates a code that needs to have access to class fields. Please make sure that you have a package-level code access for instances you are planning to persist in your entity classes (don't use "private" modifier in your class for those fields).
+Field "name" has a @DbColumn annotation that creates a table's column "name", ensures that column is indexed with "idx_artist_name" index (that will be created as well), field will be unique and must not be null.</p>
+
+<p><a href="https://github.com/mobiletoly/dbpersian/blob/master/android/TestApp/app/src/main/java/net/dbpersian/testapp/music/Genre.java">Genre</a> is pretty similar to Artist. </p>
+
+<h3>
+<a id="foreign-key" class="anchor" href="#foreign-key" aria-hidden="true"><span class="octicon octicon-link"></span></a>Foreign key</h3>
+
+<p>Let's take a look at <a href="https://github.com/mobiletoly/dbpersian/blob/master/android/TestApp/app/src/main/java/net/dbpersian/testapp/music/Album.java">Album</a> class. It is different from previous classes, because it contains references to both Artist and Genre (via SQL's foreign keys).</p>
+
+<pre><code>@DbTable(sqlName = "album")
+public class Album
+{
+    // This field is a primary key column. It is unique and automatically assigned by SQLite
+    @DbColumn(sqlName = "id", primaryKey = true)
+    Long id;
+
+    // Text field to hold a name of an album.
+    @DbColumn(sqlName = "name", indexName = "idx_album_name", notNull = true)
+    String name;
+
+    // This field is a foreign key to "id" column in Artist table.
+    @DbColumn(sqlName = "artist_id", fkTable = "artist", fkColumn = "id", notNull = true)
+    Long artistId;
+    // This field will be containing a deserialized Artist object referenced by foreign key value in artistId field
+    @DbForeignKeyReader(refField = "artistId")
+    Artist artist;
+
+    @DbColumn(sqlName = "genre_code", fkTable = "genre", fkColumn = "code", indexName = "fk_album_genrecode")
+    String genreCode;
+    Genre genre;
+
+    @DbColumn(sqlName = "year", indexName = "idx_album_year")
+    Integer yearReleased;
+
+    @DbColumn(sqlName = "description")
+    String description;
+
+    // Getters/setters
+    ...
+</code></pre>
+
+<p>}</p>
+
+<p>Let's take a look at what is going on here. First two fields ("id", "name") are obvious, but third field ("artistId") is different. What @DbColumn does here is it creates a column "artist_id" and also creates a SQL's foreign key that refers to column "id" in table "artist". By using an artistId field you could manually query an instance of Artist class via ArtistDAO, but we want to simplify this task for you. That is why we have a @DbForeignKeyReader annotation. @DbForeignKeyReader is a convenient annotation that allows us to instruct DBPersian to query table "Artist" based on a value of foreign key stored in "artistId" field above. So what it actually does is performs something like "SELECT * FROM artist_id WHERE id = :artistId" and deserialize a result into the "artist" field. Querying for entities referred by a foreign keys is enabled automatically by default. If you want to disable this behaviour, you may choose to call
+    albumDAO.setAutoFetchForeignKeyReaders(false);
+In this case querying of fields annotated with @DbForeignKeyReader will not be performed automatically. It might save you an extra database query and improve a performance (let's say at startup time), but later you can query for a foreign key entities manually. You can do it by calling:
+    final Album album = ...;
+    albumDao.fetchUserTaskGroup(album);
+or (to fetch all field annotated by @DbForeignKeyReader if you have more than one):
+    albumDao.fetchAllForeignKeyReaders(album);</p>
+
+<p>Also it is important to mention that @DbForeignKeyReader is a "one way street", it works only for reading entities. E.g. if you have changed a data inside an Artist object of Album and then you try to save that Album entity to a database, then Artist entity will not be updated inside a database. You still have to save Artist entity manually, such as
+    album.setName("Different Album");
+    album.artist.setName("Different Artist");
+    albumDAO.update(album);
+    artistDAO.update(artist);    // yep, this one is required</p>
 
 <h3>
 <a id="database-helper" class="anchor" href="#database-helper" aria-hidden="true"><span class="octicon octicon-link"></span></a>Database helper</h3>
