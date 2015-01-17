@@ -10,7 +10,8 @@ import java.io.*;
 import java.util.*;
 
 /**
- * Abstract DAO class.
+ * Abstract DAO class. In DBPersian environment usually you don't want to create any classes
+ * that will be derived from GenericDAO. Instead you should annotate your class with @DbTable annotation.
  *
  * @author tpochkin
  */
@@ -48,9 +49,6 @@ public abstract class GenericDAO<T>
         isAutoFetchForeignKeyReaders = flag;
     }
 
-    /**
-     * @return  true, if auto fetch mode to resolve foreign key objects is enabled; false, otherwise.
-     */
     public boolean isAutoFetchForeignKeyReaders()
     {
         return isAutoFetchForeignKeyReaders;
@@ -70,8 +68,6 @@ public abstract class GenericDAO<T>
         return tableName;
     }
 
-
-    /** Drop table. */
     public void dropTable()
     {
         final String sql = "DROP TABLE " + tableName;
@@ -137,10 +133,10 @@ public abstract class GenericDAO<T>
         return database.delete(tableName, whereClause, whereArgs);
     }
 
-    /** Insert entity into table. */
+    /** Insert entity into a table. */
     public abstract void insert(T entity) throws SQLException;
 
-    /** Update entity. */
+    /** Update entity inside a table. */
     public abstract void update(T entity) throws SQLException;
 
     /**
@@ -159,6 +155,9 @@ public abstract class GenericDAO<T>
         }
     }
 
+    /**
+     * Update collection of entities inside a table.
+     */
     public void update(Collection<T> entities)
     {
         database.beginTransaction();

@@ -9,7 +9,8 @@ import android.os.AsyncTask;
 import android.os.Build;
 
 /**
- * Abstract database helper.
+ * Abstract database helper. You must derive your own class from AbstractDbHelper to take care
+ * of creating/opening a database.
  */
 public abstract class AbstractDbHelper extends SQLiteOpenHelper
 {
@@ -20,13 +21,13 @@ public abstract class AbstractDbHelper extends SQLiteOpenHelper
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public AbstractDbHelper(Context context, String name, SQLiteDatabase.CursorFactory factory, int version,
-                            DatabaseErrorHandler errorHandler)
+    public AbstractDbHelper(Context context, String name, SQLiteDatabase.CursorFactory factory,
+                            int version,  DatabaseErrorHandler errorHandler)
     {
         super(context, name, factory, version, errorHandler);
     }
 
-    protected void openAsync(final boolean isWritableDatabase, final AsyncDatabaseOperation dbOp)
+    private void openAsync(final boolean isWritableDatabase, final AsyncDatabaseOperation dbOp)
     {
         new AsyncTask<Void,Void,Void>() {
             private SQLiteDatabase db;
@@ -43,21 +44,35 @@ public abstract class AbstractDbHelper extends SQLiteOpenHelper
         }.execute();
     }
 
+    /**
+     * Create and/or open a database that will be used for reading and writing. Once operation is complete
+     * then dbOp.onComplete will be called. As as result the database will be opened in writing mode.
+     */
     public void openWritableAsync(final AsyncDatabaseOperation dbOp)
     {
         openAsync(true, dbOp);
     }
 
+    /**
+     * Create and/or open a database that will be used for reading. Once operation is complete
+     * then dbOp.onComplete will be called. As as result the database will be opened in read-only mode.
+     */
     public void openReadableAsync(final AsyncDatabaseOperation dbOp)
     {
         openAsync(false, dbOp);
     }
 
+    /**
+     * Create and/or open a database that will be used for reading and writing.
+     */
     public SQLiteDatabase openWritable()
     {
         return getWritableDatabase();
     }
 
+    /**
+     * Create and/or open a database that will be used for reading.
+     */
     public SQLiteDatabase openReadable()
     {
         return getReadableDatabase();
@@ -86,6 +101,7 @@ public abstract class AbstractDbHelper extends SQLiteOpenHelper
             }
         }.execute();
     }
+
 
     public interface AsyncDatabaseOperation
     {

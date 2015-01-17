@@ -6,13 +6,36 @@
     <artifactId>api</artifactId>
     <version>0.5-SNAPSHOT</version>
     <packaging>aar</packaging>
-    <name>api</name>
+    <name>net.dbpersian:api</name>
+    <description>API library for DBPersian framework</description>
+    <url>http://mobiletoly.github.io/dbpersian</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <platform.version>4.1.1.4</platform.version>
         <android.plugin.version>3.9.0-rc.3</android.plugin.version>
     </properties>
+
+    <scm>
+        <connection>scm:git:git@github.com:mobiletoly/dbpersian.git</connection>
+        <developerConnection>scm:git:git@github.com:mobiletoly/dbpersian.git</developerConnection>
+        <url>git@github.com:mobiletoly/dbpersian.git</url>
+    </scm>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Toly Pochkin</name>
+            <email>pochkin@gmail.com</email>
+            <organizationUrl>http://mobiletoly.github.io/dbpersian</organizationUrl>
+        </developer>
+    </developers>
 
     <dependencies>
         <dependency>
@@ -25,6 +48,20 @@
 
     <build>
         <plugins>
+           <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.5</version>
+                <executions>
+                  <execution>
+                    <id>sign-artifacts</id>
+                    <phase>verify</phase>
+                    <goals>
+                      <goal>sign</goal>
+                    </goals>
+                  </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
