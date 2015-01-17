@@ -14,10 +14,7 @@ Do you want to deal with something like this
         @DbColumn(sqlName = "name", indexName = "idx_artist_name", unique = true, notNull = true)
         String name;
     
-        public Long getId() { return id; }
-    
-        public String getName() { return name; }
-        public void setName(String name) { this.name = name; }
+        ...
     }
 
 instead of writing a boring SQLite code? Well, it is easy to do, just read our tutorial:
