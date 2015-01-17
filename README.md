@@ -1,7 +1,5 @@
-dbpersian
-=========
-
 DBPersian - Database Persistence Annotations for Android.
+=========================================================
 
 Do you want to deal with something like this
 
