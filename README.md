@@ -3,6 +3,28 @@ dbpersian
 
 DBPersian - Database Persistence Annotations for Android.
 
-Have fun dealing with SQLite database for Android.
+Do you want to deal with something like this
 
-DBPersian is a simple and elegant framework to help you to deal with a routine tasks such as database access. This is a pretty thin layer in between SQLite database and Android application, mostly designed to provide a convenient way to serialize/deserialize entities to/from SQLite database based on Java annotations. The primary goal is to keep developer as close to the database as possible while getting rid of some burden and boilerplate code. Also performance is a key consideration for DBPersian, so no reflections and other relatively slow approaches, everything is done via generating code in compile time, so hopefully your code will be as fast as if you would write it by yourself.
+'''
+@DbTable(sqlName = "artist")
+public class Artist
+{
+    // This field is a primary key column. It is unique and automatically assigned by SQLite
+    @DbColumn(sqlName = "id", primaryKey = true)
+    Long id;
+
+    // Text field to hold a name of an artist.
+    @DbColumn(sqlName = "name", indexName = "idx_artist_name", unique = true, notNull = true)
+    String name;
+
+    public Long getId() { return id; }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+}
+'''
+
+instead of writing a boring SQL code? Well, it is easy to do, just read our tutorial:
+
+http://mobiletoly.github.io/dbpersian/
+
